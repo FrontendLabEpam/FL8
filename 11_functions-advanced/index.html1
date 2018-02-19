@@ -55,10 +55,10 @@ Front-end training
 ---
 # Function parent scope
 
-### Function, as an object, has a special property [[Scope]].
-### When function is **declared** - two things happen:<br>
-  1. function becomes a property of scope object<br>
-  2. current scope object is written to [[Scope]] property of function object<br>
+ Function, as an object, has a special property [[Scope]].<br>
+ When function is **declared** - two things happen:<br>
+   1. function becomes a property of scope object<br>
+   2. current scope object is written to [[Scope]] property of function object<br>
 <br>
 ```
     function parentFunction() {
@@ -83,14 +83,16 @@ Front-end training
 
 # Closure
 
-When function "knows" the scope where it was declared - we call it "closure"
+When function "knows" the scope where it was declared - we call it "closure"<br>
+As [[Scope]] is a property of function object itself - even if we return function and call it at any other place in the code - it will remember scope  where it was declared<br>
+
 
 ```
     function parent() {
         var childCallCount = 0;
         function child() {
             childCallCount++;
-            console.log(`called ${childCallCount} times`);
+            console.log(`called ${childCallCount} time(s)`);
         }
 
         child();
@@ -221,6 +223,7 @@ It's really obvious, but let's see:
 # Hoisting of let and const
 1. **let** and **const** are hoisted in a block code scope: { ... }
 2. Trying to access a variable before the declaration produces an error
+3. Error occurs because variable is in so called Temporary Dead Zone
 
 ```
     let parentPropertyLet = 'let';
@@ -241,39 +244,235 @@ It's really obvious, but let's see:
 ---
 # Summarize
 
-1. Each function object gets a link to a scope where it is declared - closure
-2. JS seek for variable value up through scopes chain
+1. Each function object gets a link to a scope where it was declared - closure
+2. JS seeks variable value up through scopes chain
 3. If we declare variable with the same name in child scope it will hide parent variable from us
 4. But only in current function. Scope is shared between child functions, they will  have access to parent variable
 
 ---
 
-# Call stack and recursion
+# Call stack
 
-Call stack holds the ordered list of called functions
+1. Call stack holds the ordered list of called functions.
+2. When function returns the result - it is removed from stack
+3. When the error occurs we can see the current call stack - useful for debugging
+
+```
+    secondInStack();
+
+    function secondInStack() {
+        thirdInStack();
+    }
+
+    function thirdInStack() {
+        console.log("I'm the third!");
+    }
+
+```
+
+---
+
+# Recursion
+
+1. Recursion is an operation when function can call itself once again.
+2. Can be useful for parsing, tree walking
+3. Call stack is not endless
+4. Any recursion can be changed to loop
+
+```
+    const usefulStorage = [1, 2, 3];
+
+    popFromStorage(usefulStorage);
+    // Item:  3
+    // Item:  2
+    // Item:  1
+    // Storage is empty!
+
+    function popFromStorage(storage) {
+        let item = storage.pop();
+        console.log("Item: ", item);
+        if (storage.length > 0) {
+            popFromStorage(storage);
+        } else {
+            console.log("Storage is empty!");
+        }
+    }
 
 
+```
 
 ---
 
 # Function execution context. This.
 
-The environment where function is executed is called **function execution context**
+The environment in which function is executed is called **function execution context**<br>
 It consists of:
 1. Function scope
 2. Function parent scope (the whole chain)
 3. "arguments" property
 4. "this" keyword - often is called "function context"
+5. Exact value of "this" is defined when the function is called
 
 ```
     function showContext() {
-        console.log(this);
+        console.log(this);  // 'window' in browser
     }
     showContext();
 ```
 
 ---
 
+# When function is a method of an object
+
+1. We say "object has a method" when a **value** of its property is a **function**
+2. someObject.method() - is just a way to set a function context
+
+```
+    const counter = {
+        currentValue: 100,
+        print: function() {
+            console.log(this.currentValue);
+        }
+    }
+
+    counter.print();  // function context is "counter" object
+
+    let printFunction = counter.print;
+    printFunction();  // function context is Window
+```
+
+---
+
+# Call and apply methods of a function
+
+1. Any function is an object itself
+2. It has special methods **call** and **apply** to execute a function
+3. Apply: A - for array
+
+```
+    const counter = {
+        currentValue: 100,
+        print: function(message) {
+            console.log(message, this.currentValue);
+        }
+    }
+
+    counter.print("Value: ");  // function context is "counter" object
+
+    let printFunction = counter.print;
+    printFunction();  // function context is Window
+
+    printFunction.call(counter, "Value: ");  // function context is a "counter" object again
+
+    printFunction.apply(counter, ["Value: "]);  // function context is a "counter" object again
+```
+
+---
+
+# Bind method of a function
+
+1. A special method which "binds" a specified context for the all future function calls
+2. bind method returns a **new** instance of function
+3. Even some additional params can be bound
+4. They **can not** be changed for a bound function
+5. But we can call bind method for inital function once again to get another instance of bound function
+
+```
+    const counter = {
+        currentValue: 100,
+        print: undefined
+    }
+
+    counter.print = (function(message) {
+        console.log(message, this.currentValue);
+    }).bind(counter, "Value: ");
+
+    counter.print();  // function context is "counter" object
+    let printFunction = counter.print;
+    printFunction("I want another message!!!");  // context is "counter", message is "Value: "
+
+    let anotherPrintFunction = printFunction.bind(window);
+    anotherPrintFunction();  // function context is "counter" object
+
+```
+
+---
+
+# When function is a constructor.
+
+1. We say "constructor function" when we use operator "new" with it and receive a new object instance
+2. Is is almost the same like to use .call({}, ...);
+
+```
+    function Counter(initialValue) {
+        this.currentValue = initialValue,
+        this.print = function() {
+            console.log(this.currentValue);
+        }
+    }
+
+    const counter = new Counter(50);
+    counter.print();  // function context is "counter" object
+
+    const counter2 = {};
+    Counter.call(counter2, 60); // function context is "counter2" object - empty object
+    counter2.print();
+
+
+```
+
+---
+
+# ES6 arrow function and execution context
+
+1. Arrow function is always "bound" to current value of this
+2. It has no "arguments" object
+
+```
+    function Counter(initialValue) {
+        this.currentValue = initialValue,
+        this.print = () => {
+            console.log(this.currentValue);
+        }
+    }
+
+    const counter = new Counter(50);
+    counter.print();  // function context is "counter" object
+    let printFunction = counter.print;
+    printFunction();  // function context is still a "counter" object
+
+```
+
+---
+
+# bind function polyfill
+Requirements
+1. it should accept initial function and context (lets skip additional params for simplicity)
+2. it should return a new function
+3. when returned function is called - initial function should be called with bound values
+4. Closure!
+
+
+```
+    function bind(initialFunction, context) {
+        let boundedFunction = function() {
+            return initialFunction.apply(context);
+        }
+        return boundedFunction;
+    }
+
+    const bindMe = function() {
+        console.log(this.name);
+    }
+
+    const context = {name: 'Kostya'};
+
+    const bounded = bind(bindMe, context);
+    bounded();
+
+```
+
+---
 
 
 # Links
