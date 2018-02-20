@@ -89,7 +89,7 @@ As [[Scope]] is a property of function object itself - even if we return functio
 
 ```
     function parent() {
-        var childCallCount = 0;
+        let childCallCount = 0;
         function child() {
             childCallCount++;
             console.log(`called ${childCallCount} time(s)`);
@@ -174,9 +174,9 @@ It's really obvious, but let's see:
 ```
     let counter = getCounter();
     counter.inc(10);
-    counter.print(); // 11
-    counter.dec();
     counter.print(); // 10
+    counter.dec();
+    counter.print(); // 9
 ```
 ---
 # Parent scope is shared between child functions ES6 example
@@ -193,10 +193,18 @@ It's really obvious, but let's see:
     let counter = getCounter();
     counter.inc(10);
     counter.inc();
-    counter.print(); // 11
-    counter.dec();
     counter.print(); // 10
+    counter.dec();
+    counter.print(); // 9
 ```
+
+---
+# Summarize
+
+1. Each function object gets a link to a scope where it was declared - closure
+2. JS seeks variable value up through scopes chain
+3. If we declare variable with the same name in child scope it will hide parent variable from us
+4. But only in current function. Scope is shared between child functions, they will  have access to parent variable
 
 ---
 
@@ -240,14 +248,6 @@ It's really obvious, but let's see:
     hoistingExample(false);
     hoistingExample(true);
 ```
-
----
-# Summarize
-
-1. Each function object gets a link to a scope where it was declared - closure
-2. JS seeks variable value up through scopes chain
-3. If we declare variable with the same name in child scope it will hide parent variable from us
-4. But only in current function. Scope is shared between child functions, they will  have access to parent variable
 
 ---
 
