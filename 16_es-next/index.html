@@ -137,6 +137,25 @@ class: center, middle
 
 ---
 
+class: center, middle
+
+# ECMAScript 2018
+
+---
+
+# ECMAScript 2018
+
+* [Asynchronous Iteration](http://2ality.com/2016/10/asynchronous-iteration.html)
+* [Rest/Spread Properties](http://2ality.com/2016/10/rest-spread-properties.html)
+* [RegExp named capture groups](http://2ality.com/2017/05/regexp-named-capture-groups.html)
+* [RegExp Unicode Property Escapes](http://2ality.com/2017/07/regexp-unicode-property-escapes.html)
+* [RegExp Lookbehind Assertions](http://2ality.com/2017/05/regexp-lookbehind-assertions.html)
+* [s (dotAll) flag for regular expressions](http://2ality.com/2017/07/regexp-dotall-flag.html)
+* [Promise.prototype.finally()](http://2ality.com/2017/07/promise-prototype-finally.html)
+* [Template Literal Revision](http://2ality.com/2016/09/template-literal-revision.html)
+
+---
+
 # http://kangax.github.io/compat-table/es6/
 
 ![kangax table](assets/kangax.jpg)
@@ -145,33 +164,38 @@ class: center, middle
 
 class: center, middle
 
-# Lets look into deeper into ES2015
+# Lets look into deeper into some new features
 
 ---
 
 # Variable Declarations
 
 ```
-let variable = 5;
+console.log(variable); // ??
 
-{
-  console.log('inside', variable); // error
-  let variable = 10;
-}
+var variable = 10;
 
-console.log('outside', variable); // 5
+console.log(variable); // ??
+```
+--
+```
+console.log(variable); // ??
+
+let variable = 10;
+
+console.log(variable); // ??
 ```
 --
 ```
 {
   const variable = 5; // same scoping rules as let
-  variable = variable*2; // error
+  variable = variable*2; // ??
 }
 ```
 --
 ```
 const variable = [5];
-variable[0] = variable[0]*2; // [10] :'(
+variable[0] = variable[0]*2; // ??
 ```
 
 ---
@@ -195,37 +219,44 @@ Convenient syntax to extract values from objects and arrays.
 
 ```
 const arr = [1, 2, 3, 4];
-const [a, b, c] = arr;
+const [a, , b, c] = arr;
 
-console.log(a, b, c); // 1, 2, 3
+console.log(a, b, c); {{content}}
 ```
+--
+// 1, 3, 4
 --
 ```
 let obj = {e: 1, f: 2, g: 3};
 let {e, f, h} = obj;
 
-console.log(e, f, g); {{content}}
+console.log(e, f, h); {{content}}
 ```
 --
-// ReferenceError: g is not defined
-
+// 1, 2, undefined
 ---
 # Spread
 Convenient way to get "everything else that remains".
 
 ```
 const [head, ...tail] = [1,2,3,4,5];
-console.log(head, tail); // 1, [2, 3, 4, 5]
+console.log(head, tail); {{content}}
 ```
 --
-
+// 1, [2, 3, 4, 5]
+--
 ```
 let {a, ...rest} = {a: 1, b: 2, c: 3};
 console.log(a, rest); {{content}}
 ```
 --
-// SyntaxError: Unexpected token ... // not es2015
-
+// SyntaxError: Unexpected token ... // not es2015 😥,
+// but added in ES2018 🎉 so 1, { b: 2, c: 3 }
+--
+```
+const {...rest, foo} = obj; // SyntaxError
+const {foo, ...rest1, ...rest2} = obj; // SyntaxError
+```
 ---
 # Arrow Functions
 An arrow function is always bound to the scope it's defined in.
