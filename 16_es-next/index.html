@@ -393,6 +393,181 @@ export { buildQuery as toQuery };
 ```
 
 ---
+
+# Generators
+Generators, a new feature of ECMAScript 2015, are functions that can be paused and resumed. This helps with
+many applications: iterators, asynchronous programming, etc. This blog post explains how generators work and gives
+an overview of their applications.
+
+--
+```
+function* genFunc() {
+  yield 'a';
+  yield 'b';
+}
+```
+--
+```
+function* objectEntries(obj) {
+  const propKeys = Reflect.ownKeys(obj);
+
+  for (const propKey of propKeys) {
+    yield [propKey, obj[propKey]];
+  }
+}
+```
+--
+More info here http://2ality.com/2015/03/es6-generators.html
+
+---
+
+# Async functions
+
+An `async` function can contain an `await` expression that pauses the execution of the async function 
+and waits for the passed `Promise`'s resolution, and then resumes the async function's execution 
+and returns the resolved value.
+
+--
+```
+function fetchJson(url) {
+  return fetch(url)
+    .then(request => request.text())
+    .then(text => JSON.parse(text))
+    .catch(error => console.log(`ERROR: ${error.stack}`));
+}
+fetchJson('https://api.github.com/users/blobor/repos').then(res => console.log(res))
+```
+--
+```
+async function fetchJson(url) {
+  try {
+    const request = await fetch(url);
+    const text = await request.text();
+    return JSON.parse(text);
+  }
+  catch (error) {
+    console.log(`ERROR: ${error.stack}`);
+  }
+}
+fetchJson('https://api.github.com/users/blobor/repos').then(res => console.log(res))
+```
+---
+
+# Async functions
+
+More info here:
+* https://developers.google.com/web/fundamentals/primers/async-functions
+* http://2ality.com/2016/02/async-functions.html
+
+---
+
+# Asynchronous Iteration
+With ECMAScript 2015, JavaScript got built-in support for synchronously iterating over data.
+But what about data that is delivered asynchronously? For example, lines of text,
+read asynchronously from a file or an HTTP connection.
+
+--
+```
+function* genFunc() {
+  yield 'a';
+  {{content}}
+  yield 'b';
+}
+```
+--
+// How about some async operation here 🤔 ?
+--
+```
+function* genFunc() {
+  // await somethisngAsync()
+  yield 'a';
+  // await somethisngAsync()
+  yield 'b';
+}
+```
+---
+# Asynchronous Iteration
+
+```
+async function* asyncRandomNumbers() {
+  // This is a web service that returns a random number
+  const url = 'https://www.random.org/decimal-fractions/?num=1&dec=10&col=1&format=plain&rnd=new';
+
+  while (true) {
+    const response = await fetch(url);
+    const text = await response.text();
+    yield Number(text);
+  }
+}
+
+async function example() {
+  for await (const number of asyncRandomNumbers()) {
+    console.log(number);
+    if (number > 0.90) break;
+  }
+}
+```
+---
+
+# Asynchronous Iteration (real world example)
+
+```
+async function getCommitsCount() {
+  async function fetchJson(url) {
+    try {
+      const request = await fetch(url);
+      const text = await request.text();
+      return JSON.parse(text);
+    }
+    catch (error) {
+      console.log(`ERROR: ${error.stack}`);
+    }
+  }
+
+  async function* fetchCommits(repos) {
+    for (const repo of repos) {
+      const commits = await fetchJson(`${repo.url}/commits`)
+
+      yield commits
+    }
+  }
+
+  const repos = await fetchJson('https://api.github.com/users/blobor/repos')
+  let totalCommits = 0
+
+  for await (const commits of fetchCommits(repos)) {
+    totalCommits += commits.length
+  }
+
+  return totalCommits
+}
+```
+
+---
+# Asynchronous Iteration
+
+More info here:
+* https://jakearchibald.com/2017/async-iterators-and-generators/
+* http://2ality.com/2016/10/asynchronous-iteration.html
+
+---
+
+# Read at home
+
+Articles:
+* http://2ality.com/2015/08/getting-started-es6.html
+* http://2ality.com/2016/01/ecmascript-2016.html
+* http://2ality.com/2016/02/ecmascript-2017.html
+* http://2ality.com/2017/02/ecmascript-2018.html
+
+Books:
+* http://exploringjs.com/es6/
+* http://exploringjs.com/es2016-es2017.html
+* http://exploringjs.com/es2018-es2019/index.html
+
+Subscribe to  http://esnextnews.com/ newsletter (it's FREE 🎉)
+
+---
 class: center, middle
 
 # Thank You!
