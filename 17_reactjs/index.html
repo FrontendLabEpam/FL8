@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ReactJS 🤘</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="../assets/css/reset.css" rel="stylesheet" type="text/css" />
+    <link href="../assets/css/fonts.css" rel="stylesheet" type="text/css" />
+    <link href="../assets/css/typography.css" rel="stylesheet" type="text/css" />
+    <link href="../assets/css/style.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+
+<div class="wrapper">
+  <header class="mainheader">
+    <div class="logo">
+      <a href=""><span class="logotext">ReactJS</span></a>
+    </div>
+  </header>
+</div>
+
+<!-- ================== Slides ================== -->
+    <textarea id="source">
+
+class: center, middle
+
+.title[
+Front-end training
+# React JS
+]
+
+---
+
+class: center, middle
+
+![React log](assets/react-logo.svg)
+
+---
+# What is ReactJS?
+
+* It's just a library (not a framework)
+* Declarative, efficient, and flexible
+* Open sourced on [github](https://github.com/facebook/react)
+* Made by Facebook 🤘
+* Was introduced on JSConf EU in 2013 (https://youtu.be/x7cQ3mrcKaY)
+
+--
+
+Example:
+```javascript
+class GithubRepositories extends React.Component {
+  render() {
+    return (
+      <div className="gh-repos__list">
+        <h1>{this.props.userName} repositories:</h1>
+        <ul>
+          <li>MegoProject</li>
+          <li>SecretFBIApp</li>
+          <li>NewTeslaCar</li>
+        </ul>
+      </div>
+    );
+  }
+}
+```
+
+---
+
+# Key pooints
+
+* JSX
+* UI components (statefull and stateless)
+* Data flow
+* Virtual DOM
+* Synthetic Events
+
+---
+
+# [JSX](https://reactjs.org/docs/introducing-jsx.html)
+
+Instead of artificially separating technologies by putting markup and logic in separate files, React separates concerns with loosely
+coupled units called “components” that contain both. We will come back to components in a further section, but
+if you’re not yet comfortable putting markup in JS, this talk might convince you otherwise.
+
+--
+
+```javascript
+const element = (
+  <h1 className="greeting">
+    Hello, world!
+  </h1>
+)
+```
+is identical to
+
+--
+
+```javascript
+const element = React.createElement(
+  'h1',
+  {className: 'greeting'},
+  'Hello, world!'
+);
+```
+
+---
+
+class: center, middle
+
+.title[
+Front-end training
+# UI components
+]
+
+---
+
+# UI components
+
+Components let you split the UI into independent, reusable pieces, and think about each piece in isolation.
+
+Conceptually, components are like JavaScript functions. They accept arbitrary inputs (called “props”) and return React elements
+describing what should appear on the screen.
+
+--
+
+![component](assets/component.png)
+
+---
+
+# Functional and Class Components
+
+--
+```javascript
+function Welcome(props) {
+  return <h1>Hello, {props.name}</h1>;
+}
+```
+
+--
+
+vs
+
+```javascript
+class Welcome extends React.Component {
+  render() {
+    return <h1>Hello, {this.props.name}</h1>;
+  }
+}
+```
+
+At this point the above two components are equivalent from React’s point of view
+
+---
+
+# Rendering of the components
+
+For component rendering, we using `raect-dom` library which knows how to render components into DOM.
+
+```javascript
+function Welcome(props) {
+  return <h1>Hello, {props.name}</h1>;
+}
+
+const element = <Welcome name="Elon" />;
+ReactDOM.render(
+  element,
+  document.getElementById('root')
+);
+```
+
+---
+
+# Component Composition
+
+```
+import React from 'react'
+import Header from './Header'
+import SearchBar from './SearchBar'
+import BearList from './BearList'
+
+const HomePageComponent = () => {
+  return (
+    <div>
+        <Header />
+        <SearchBar />
+        <BearList />
+    </div>
+  )
+}
+```
+
+---
+
+# Component Composition. Children
+
+```
+// App.jsx
+class App extends React.Component {
+  render() {
+    return (
+      <div className="app-root">{this.props.children}</div>
+    )
+  }
+}
+
+// Client.jsx
+import React from 'react'
+import { render } from 'react-dom'
+import App from './App';
+import Header from './Header'
+import SearchBar from './SearchBar'
+import BearList from './BearList'
+
+render(
+  <App>
+    <Header />
+    <SearchBar />
+    <BearList />
+  </App>,
+  document.getElementById('app')
+)
+```
+
+---
+
+class: center, middle
+
+.title[
+Front-end training
+# Data flow
+]
+
+---
+
+# Data flow
+
+- Parent-to-Child
+  - Data can be passed to children as properties and available as `this.props`
+  - Properties are immutable
+
+- Child-to-Parent
+  - Event handlers (callbacks) can be passed as properties
+
+--
+
+![component](assets/react-data-flow.png)
+
+---
+
+# Data flow
+
+```javascript
+// some code here ...
+
+onSearch(keyword) {
+  alert(keyword)
+}, 
+
+render() {
+  return (
+    <div>
+      <Header title="Hello World" />
+      <SearchBar onSearch={this.onSearch} />
+    </div>
+  );
+}
+
+// here is even more code ...
+```
+
+---
+
+# Data Flow
+
+Ok, but how about validation of incoming props 🤔
+
+--
+
+```
+// Header.js
+import React from 'react'
+import PropTypes from 'prop-types';
+
+const Header = (props) => {
+  return <h1>{props.title}</h1>;
+}
+
+Header.propTypes = {
+  title: PropTypes.string
+}
+
+Header.defaultProps = {
+  title: 'Some default title'
+}
+```
+
+---
+
+# Data Flow
+
+```
+// SearchBar.js
+
+class SearchBar extends React.Component {
+  onChange (e) {
+    this.props.onSearch(e.target.value);
+  }
+
+  render () {
+    return (
+      <input type="text" onChange={this.onChange.bind(this)} />;
+    )
+  }
+}
+```
+
+---
+
+# Data Flow, component State
+
+State is mutable and a [private](https://medium.com/react-tutorials/react-state-14a6d4f736f5#.6byg04o4r) data-set of a component.
+Each time state is changed, UI will be changed.
+
+```
+...
+constructor(props) {
+  this.state.name = 'Michael';
+}
+
+render() {
+  return (
+    <h1>Hello {this.state.name}</h1>
+  );
+}
+```
+
+--
+
+Do Not Modify State Directly
+```
+this.state.name = 'Petro'; //wrong
+```
+In order to update state use setState method
+```
+this.setState({name: 'Petro'})```
+
+Thanks to the setState() call, React knows the state has changed, and calls render() method again to learn what should be on the screen
+
+---
+
+# Data Flow, component State
+
+```javascript
+class App extends React.Component {
+  constructor(props) {
+      this.state = {
+          count: 0
+      }
+  }
+
+  onClick(e) {
+      this.setState({
+          count: this.state.count + 1
+      });
+  }
+
+  render() {
+      return (
+          <div>
+              <h1>{this.state.count}</h1>
+              <button onClick={this.onClick.bind(this)}>Count Up!!</button>
+          </div>
+      )
+  }
+}
+```
+---
+
+# Synthetic Events
+
+Handling events with React elements is very similar to handling events on DOM elements. There are some syntactic differences:
+
+- React events are named using camelCase, rather than lowercase.
+- With JSX you pass a function as the event handler, rather than a string.
+
+For example, the HTML:
+
+```
+<button onclick="activateLasers()">
+  Activate Lasers
+</button>
+```
+
+is slightly different in React:
+
+```
+<button onClick={activateLasers}>
+  Activate Lasers
+</button>
+``` 
+
+
+---
+
+class: center, middle
+
+.title[
+Front-end training
+# Virtual DOM
+]
+
+---
+
+# What is the Virtual DOM?
+
+The virtual DOM (VDOM) is a programming concept where an ideal, or “virtual”, representation of a UI is kept in memory 
+and synced with the “real” DOM by a library such as ReactDOM. This process is called reconciliation.
+
+![component](assets/virtual-dom.jpg)
+
+---
+
+# Component lifecircle events
+
+### Mounting
+These methods are called when an instance of a component is being created and inserted into the DOM:
+
+- constructor()
+- componentWillMount()
+- render()
+- componentDidMount()
+
+### Updating
+An update can be caused by changes to props or state. These methods are called when a component is being re-rendered:
+
+- componentWillReceiveProps()
+- shouldComponentUpdate()
+- componentWillUpdate()
+- render()
+- componentDidUpdate()
+
+---
+
+# Component lifecircle events
+
+### Unmounting
+This method is called when a component is being removed from the DOM:
+
+- componentWillUnmount()
+
+### Other APIs
+Each component also provides some other APIs:
+
+- setState()
+- forceUpdate()
+
+---
+
+# Component lifecircle events
+
+![component](assets/lifecircle.png)
+
+---
+
+# Read at home
+
+Articles:
+* https://reactjs.org/tutorial/tutorial.html
+* https://github.com/planningcenter/react-patterns
+
+Videos:
+* https://egghead.io/courses/the-beginner-s-guide-to-react
+* https://egghead.io/courses/getting-started-with-redux
+* https://www.youtube.com/watch?v=uvAXVMwHJXU
+
+Subscribe to http://reactjsnewsletter.com/ newsletter (it's FREE 🎉)
+
+---
+
+class: center, middle
+
+# Thank You!
+### Questions?
+
+    </textarea>
+<!-- ================== End of Slides ================== -->
+
+    <script src="../assets/js/remark-latest.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      remark.create({
+        highlightStyle: 'github',
+        highlightLanguage: 'javascript',
+        highlightLines: true,
+        countIncrementalSlides: false
+      });
+    </script>
+</body>
+</html>
